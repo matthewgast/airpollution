@@ -1,7 +1,9 @@
 pollutantmean <- function(directory, pollutant, id = 1:332) {
 	# Inputs: directory where files are found
 	#         pollutant, either "nitrate" or "sulfate"
-	#         vector of stations to look for
+	#         vector of stations to process
+	#
+	# Output: mean of pollutant type over specified sensors
 	
 	# Change to specified directory
 	cwd <- getwd()
@@ -12,24 +14,17 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
 		print("ERROR: Directory does not exist!")
 	}
 	
-	# Create list of files to be tested against
+	# Create list of files in the directory
     file_list <- list.files(newdir,pattern="*.csv")
     
-    for (filename in file_list) {
-    		# First-time read needs to create the data
-    		if (!exists("pollution_data")) {
-    			pollution_data <- read.csv(filename)
-    		} else {
-    			file_data <- read.csv(filename)
-    			pollution_data <- rbind(pollution_data,file_data)
-    			rm(file_data)	
-    		}
-        }
+    pollution_data <- data.frame()
+    
+    # Only read from files of interest
+    for (filenumber in id) {
+    	pollution_data <- rbind(pollution_data,read.csv(file_list[filenumber]))
+    }
     # Restore working directory
     setwd(cwd)
-
-	# Extract the desired pollutant from sensors    
-    pollution_vector <- pollution_data[pollution_data$ID %in% id, pollutant]
-    
-	mean(pollution_vector,na.rm=TRUE)
+	
+	mean(pollution_data[,pollutant],na.rm=TRUE)
 }
